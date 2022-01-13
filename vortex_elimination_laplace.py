@@ -68,6 +68,23 @@ def rho(row_diff, col_diff):
     return rho
 
 
+def replace_func(image_fft):
+    rows = len(image_fft)
+    cols = len(image_fft[0])
+
+    denominator = np.empty((rows, cols), dtype=np.float64)
+
+    for row in range(rows):
+        for col in range(cols):
+            denominator[row, col] = (2 * np.cos(PI * row / (rows // 2)) + 2 * np.cos(PI * col / (cols // 2)) - 4)
+
+    denominator[0, 0] = 1
+    phi = image_fft / denominator
+    phi[0, 0] = 0
+
+    return phi
+
+
 PI = np.pi
 
 img = np.float64(imageio.imread("input/test.bmp"))
@@ -88,3 +105,6 @@ rho = rho(row_diffs, col_diffs)
 
 # Step 2
 image_fft = np.fft.fft2(rho)
+
+# Step 3
+replaced = replace_func(image_fft)
