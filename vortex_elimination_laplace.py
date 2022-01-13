@@ -69,7 +69,6 @@ def rho(row_diff, col_diff):
 
 
 PI = np.pi
-cos = np.cos
 
 img = np.float64(imageio.imread("input/test.bmp"))
 img = np.fft.fftshift(img)
@@ -86,3 +85,6 @@ row_diffs = row_diff(reflected)
 col_diffs = col_diff(reflected)
 
 rho = rho(row_diffs, col_diffs)
+
+# Step 2
+image_fft = np.fft.fft2(rho)
