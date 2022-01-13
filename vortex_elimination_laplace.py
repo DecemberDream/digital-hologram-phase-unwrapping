@@ -3,8 +3,7 @@ import imageio
 
 
 def reflection_full(image):
-    rows = len(image)
-    cols = len(image[0])
+    rows, cols = image.shape
 
     reflected = np.empty((2 * rows, 2 * cols))
     upper = np.empty((rows, cols * 2))
@@ -32,8 +31,7 @@ def correct_interval(values):
 
 
 def row_diff(psi):
-    rows = len(psi)
-    cols = len(psi[0])
+    rows, cols = psi.shape
 
     row_diff = np.zeros((rows, cols))
 
@@ -43,9 +41,8 @@ def row_diff(psi):
     return row_diff
 
 
-def col_diff(psi):
-    rows = len(psi)
-    cols = len(psi[0])
+def col_diff(psi):   
+    rows, cols = psi.shape
 
     col_diff = np.zeros((rows, cols))
 
@@ -68,18 +65,23 @@ def rho(row_diff, col_diff):
     return rho
 
 
-def replace_func(image_fft):
-    rows = len(image_fft)
-    cols = len(image_fft[0])
+def kernel(n):
+    kernel = np.zeros((n,n), dtype=np.float64)
+    kernel[n//2, n//2] = -4
+    kernel[n//2 + 1, n//2] = 1
+    kernel[n//2 - 1, n//2] = 1
+    kernel[n//2, n//2 + 1] = 1
+    kernel[n//2, n//2 - 1] = 1
+    
+    return kernel
 
-    denominator = np.empty((rows, cols), dtype=np.float64)
 
-    for row in range(rows):
-        for col in range(cols):
-            denominator[row, col] = (2 * np.cos(PI * row / (rows // 2)) + 2 * np.cos(PI * col / (cols // 2)) - 4)
-
-    denominator[0, 0] = 1
-    phi = image_fft / denominator
+def replace_kernel(image_fft):
+    k = kernel(len(image_fft))
+    k = np.fft.fft2(k)
+    k = np.real(k)
+    k[0, 0] = 1
+    phi = image_fft / k
     phi[0, 0] = 0
 
     return phi
@@ -87,7 +89,13 @@ def replace_func(image_fft):
 
 PI = np.pi
 
-img = np.float64(imageio.imread("input/test.bmp"))
+file = "test.bmp"
+
+file = file.split(".")
+file_name = file[0]
+file_ext = file[1]
+
+img = np.float64(imageio.imread(f"input/{file_name}.{file_ext}"))
 img = np.fft.fftshift(img)
 
 rows = len(img)
@@ -107,4 +115,17 @@ rho = rho(row_diffs, col_diffs)
 image_fft = np.fft.fft2(rho)
 
 # Step 3
-replaced = replace_func(image_fft)
+replaced = replace_kernel(image_fft)
+
+# step 4
+phi = np.fft.ifftshift(np.fft.ifft2(replaced))[:rows, :cols]
+phi = np.real(phi)
+
+# Wrap back properly and turn values into 8-bit integers
+phi = phi - np.min(phi)
+phi = phi % (2 * PI)
+phi = phi / np.max(phi) * 255
+phi = np.rint(phi)
+phi = np.uint8(phi)
+
+imageio.imsave(f"output/{file_name}_phi.{file_ext}", phi)
