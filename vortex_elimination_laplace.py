@@ -1,6 +1,6 @@
 import numpy as np
 import imageio
-from time import time
+
 
 def reflection_full(image):
     rows, cols = image.shape
@@ -104,7 +104,6 @@ def replace_func(image_fft):
     return phi
 
 
-t0 = time()
 PI = np.pi
 
 file = "test.bmp"
