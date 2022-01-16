@@ -40,7 +40,7 @@ def get_vortex_type(m):
     else:
         return 0
 
-t0 = time()
+
 PI = np.pi
 
 file = "test.bmp"

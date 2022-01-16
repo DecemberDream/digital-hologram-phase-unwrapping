@@ -1,6 +1,6 @@
 import numpy as np
 import imageio
-
+from time import time
 
 def reflection_full(image):
     rows, cols = image.shape
@@ -87,6 +87,24 @@ def replace_kernel(image_fft):
     return phi
 
 
+def replace_func(image_fft):
+    rows = len(image_fft)
+    cols = len(image_fft[0])
+
+    denominator = np.empty((rows, cols), dtype=np.float64)
+
+    for row in range(rows):
+        for col in range(cols):
+            denominator[row, col] = (2 * np.cos(PI * row / (rows//2)) + 2 * np.cos(PI * col / (cols//2)) - 4)
+
+    denominator[0, 0] = 1
+    phi = image_fft / denominator
+    phi[0, 0] = 0
+
+    return phi
+
+
+t0 = time()
 PI = np.pi
 
 file = "test.bmp"
@@ -116,6 +134,7 @@ image_fft = np.fft.fft2(rho)
 
 # Step 3
 replaced = replace_kernel(image_fft)
+# replaced = replace_func(image_fft)
 
 # step 4
 phi = np.fft.ifftshift(np.fft.ifft2(replaced))[:rows, :cols]
